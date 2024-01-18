@@ -2,17 +2,12 @@ const express = require("express");
 const cors = require("cors");
 const axios = require("axios");
 const moment = require("moment");
-const app = express();
 const mysql = require("mysql2");
+const app = express();
 
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(
-  cors({
-    origin: "http://localhost:3000",
-    credentials: true,
-  })
-);
 
 const connection = mysql.createConnection({
   host: "localhost",
@@ -21,16 +16,8 @@ const connection = mysql.createConnection({
   database: "movies-db",
 });
 
-
 app.get("/", (req, res) => {
-  res.send("Hello this is Sumit's APi");
-
-  connection.query("SELECT * from movies", (err, rows, fields) => {
-    if (err) throw err;
-
-    console.log("The solution is: ", rows);
-    console.log("The solution is fields: ", fields);
-  });
+  res.send("Hi this is sumit from the server 2!");
 });
 
 app.get("/movies", async (req, res) => {
@@ -66,71 +53,51 @@ app.get("/movies", async (req, res) => {
 
 app.post("/create", (req, res) => {
   try {
-    console.log("Req Received =>", req.body);
-    const eachMovie = req.body?.movieList[0];
+    const movies = req.body?.movieList[0];
 
-    const date = eachMovie.movieReleaseDate;
+    const date = movies.movieReleaseDate;
     const unixDate = moment(date).unix();
 
-    const insertQuery = `INSERT INTO movies (Title, description, Popularity, imagePath, VoteCount, ReleaseDate, VoteAverage)
-    VALUES ('${eachMovie.movieTitle}', '${eachMovie.movieOverview}', '${eachMovie.moviePopularity}', 
-    '${eachMovie.moviePosterPath}', '${eachMovie.movieVoteCount}', '${unixDate}', '${eachMovie.movieVoteAverage}');`;
+    const insertMovies = `INSERT INTO movies (title, description, popularity, imagePath, voteCount, releaseDate, voteAverage)
+        VALUES ('${movies.movieTitle}', '${movies.movieOverview}', '${movies.moviePopularity}', 
+             '${movies.moviePosterPath}', '${movies.movieVoteCount}', '${unixDate}', '${movies.movieVoteAverage}');`;
 
-    console.log("insertQuery =>", insertQuery);
+    console.log("insertQuery =>", insertMovies);
 
-    connection.query(insertQuery, (err, rows, fields) => {
+    connection.query(insertMovies, (err, createdMovie) => {
       if (err) throw err;
 
-      console.log("The solution is: ", rows);
-      console.log("The solution is fields: ", fields);
-      res.send("Successfully Created");
+      console.log("The created movie are: ", createdMovie);
     });
+    if(movies.movieTitle.length > 2){
+      res.status(200).send("successfuly created");
+    }
   } catch (error) {
     console.error("Error creating movie: ", error);
+  }
+});
+
+app.post("/delete", (req, res) => {
+  try {
+    const movies = req.body?.movieList[0];
+
+    console.log("ID to be deleted: ", movies.movieID);
+
+    const deleteMovie = `DELETE FROM movies WHERE movieId = ${movies.movieID};`;
+
+    connection.query(deleteMovie, (err, deletedMovie) => {
+      if (err) throw err;
+      console.log("Deleted Movie: ", deletedMovie);
+    });
+    
+    if(movies.movieID > 0){
+      res.status(200).send("successfuly created");
+    }
+  } catch (error) {
+    console.log("Error Deleteing the movie: ", error);
   }
 });
 
 app.listen(8000, () => {
   console.log(`Server is running on port 8000`);
 });
-
-
-// let movies = [];
-
-// app.post("/create", (req, res) => {
-//   try {
-//     console.log("Req Received =>", req.body);
-    // const newMoviesWhichBeCreated = req.body?.movieList.map((eachMovie) => {
-    //   return {
-    //     movieId: eachMovie.movieID,
-    //     Title: eachMovie.movieTitle,
-    //     Overview: eachMovie.movieOverview,
-    //     Popularity: eachMovie.moviePopularity,
-    //     PosterPath: eachMovie.moviePosterPath,
-    //     VoteCount: eachMovie.movieVoteCount,
-    //     ReleaseDate: eachMovie.movieReleaseDate,
-    //     VoteAverage: eachMovie.movieVoteAverage,
-    //   };
-    // });
-    // console.log("Data Received =>", newMoviesWhichBeCreated);
-    // movies = [...movies, ...newMoviesWhichBeCreated];
-    // console.log("Total Database =>", movies);
-    // res.send(movies);
-// })
-
-// app.delete("/api/movies/:id", async (req, res) => {
-//   try {
-//     await Movie.findByIdAndRemove(req.params.id);
-//     res.status(204).end();
-//   } catch (error) {
-//     res.status(500).json({ error: "Internal Server Error" });
-//   }
-// });
-
-// app.set("view engine", "ejs");
-
-// const userRouter = require("./routes/users");
-
-// app.use("/users", userRouter);
-
-// app.listen(8000);
