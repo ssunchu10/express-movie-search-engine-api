@@ -30,19 +30,29 @@ app.get("/movies", async (req, res) => {
     const apiResponse = await axios.get(
       `https://api.themoviedb.org/3/search/movie?query=${query}&page=${page}&api_key=210c1a86f52296d71c06efcbac38c0c7`
     );
+    // console.log("The apiResponse is: ", apiResponse);
+
     const searchText = `SELECT movieId as id, title, description as overview, popularity, imagePath as poster_path,
     voteCount as vote_count, ReleaseDate as release_date, VoteAverage as vote_average  FROM movies WHERE title like '${query}%'`;
-    console.log("The apiResponse is: ", apiResponse);
 
-    connection.query(searchText, (err, rows, fields) => {
+    connection.query(searchText, (err, rows) => {
       if (err) throw err;
 
       console.log("The solution is: ", rows);
-      console.log("The solution is fields: ", fields);
+      // console.log("The solution is fields: ", fields);
+
+      const formattedDateRows = rows.map((row) => ({
+        ...row,
+        release_date: moment.unix(row.release_date).format("YYYY-MM-DD"),
+      }));
+
+      console.log("Output of converted release date: ", formattedDateRows);
+      // console.log("Number of movies from the database: ", formattedDateRows.length);
 
       const combinedData = {
         ...apiResponse.data,
-        results: [...apiResponse.data.results, ...rows],
+        results: [...apiResponse.data.results, ...formattedDateRows],
+        total_results: apiResponse.data.total_results + formattedDateRows.length,
       };
 
       console.log("combinedData =>", combinedData);
@@ -56,7 +66,7 @@ app.post("/create", (req, res) => {
     const movies = req.body?.movieList[0];
 
     const date = movies.movieReleaseDate;
-    const unixDate = moment(date).unix();
+    const unixDate = moment(date).valueOf();
 
     const insertMovies = `INSERT INTO movies (title, description, popularity, imagePath, voteCount, releaseDate, voteAverage)
         VALUES ('${movies.movieTitle}', '${movies.movieOverview}', '${movies.moviePopularity}', 
@@ -69,7 +79,7 @@ app.post("/create", (req, res) => {
 
       console.log("The created movie are: ", createdMovie);
     });
-    if(movies.movieTitle.length > 2){
+    if (movies.movieTitle.length > 2) {
       res.status(200).send("successfuly created");
     }
   } catch (error) {
@@ -89,8 +99,8 @@ app.post("/delete", (req, res) => {
       if (err) throw err;
       console.log("Deleted Movie: ", deletedMovie);
     });
-    
-    if(movies.movieID > 0){
+
+    if (movies.movieID > 0) {
       res.status(200).send("successfuly created");
     }
   } catch (error) {
