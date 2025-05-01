@@ -5,6 +5,8 @@ const moment = require("moment");
 const app = express();
 const mysql = require("mysql2");
 
+require("dotenv").config();
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(
@@ -14,12 +16,23 @@ app.use(
   })
 );
 
-const connection = mysql.createConnection({
-  host: "localhost",
-  user: "root",
-  password: "root@123",
-  database: "movies-db",
+console.log("🚨 Connecting with user:", process.env.DB_USER);
+
+console.log("ENV TEST:", {
+  DB_HOST: process.env.DB_HOST,
+  DB_USER: process.env.DB_USER,
+  DB_PASS: process.env.DB_PASS,
+  DB_NAME: process.env.DB_NAME,
 });
+
+
+const connection = mysql.createConnection({
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASS,
+  database: process.env.DB_NAME,
+});
+
 
 app.get("/", (req, res) => {
   res.send("Hello this is Sumit's APi");
