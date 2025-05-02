@@ -47,9 +47,16 @@ VALUES (?, ?, ?, ?, ?, ?, ?)`;
   connection.query(insertQuery, values, callback);
 };
 
+const deleteMovie = (movieId, callback) => {
+  const deleteQuery = `DELETE FROM movies WHERE movieId = ?`;
+  connection.query(deleteQuery, [movieId], callback);
+};
+
+
 export default {
   getAllMovies,
   getMoviesFromDB,
   fetchMoviesFromAPI,
   insertMovie,
+  deleteMovie
 };

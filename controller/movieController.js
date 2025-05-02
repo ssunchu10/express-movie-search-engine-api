@@ -48,3 +48,27 @@ export const createMovie = (req, res) => {
     res.status(500).send("Error creating movie");
   }
 };
+
+export const deleteMovie = (req, res) => {
+  try {
+    const movieId = req.body?.movieList[0]?.movieID;
+
+    if (!movieId) {
+      return res.status(400).send("Missing movie ID");
+    }
+
+    movieService.deleteMovie(movieId, (err, result) => {
+      if (err) throw err;
+
+      if (result.affectedRows === 0) {
+        return res.status(404).send("Movie not found");
+      }
+
+      res.send("Successfully Deleted");
+    });
+  } catch (err) {
+    console.error("Error deleting movie: ", err);
+    res.status(500).send("Error deleting movie");
+  }
+};
+
