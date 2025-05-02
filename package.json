@@ -8,6 +8,7 @@
     "start": "nodemon server.js",
     "start:server2": "nodemon server2.js"
   },
+  "type": "module",
   "keywords": [],
   "author": "",
   "license": "ISC",

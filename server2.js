@@ -16,16 +16,6 @@ app.use(
   })
 );
 
-console.log("🚨 Connecting with user:", process.env.DB_USER);
-
-console.log("ENV TEST:", {
-  DB_HOST: process.env.DB_HOST,
-  DB_USER: process.env.DB_USER,
-  DB_PASS: process.env.DB_PASS,
-  DB_NAME: process.env.DB_NAME,
-});
-
-
 const connection = mysql.createConnection({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
